@@ -14,5 +14,4 @@ def diff_colorize(diff: str) -> str:
 
         result += f"{line}{RESET}\n"
 
-    result = result
     return result

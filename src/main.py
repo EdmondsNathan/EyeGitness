@@ -1,4 +1,4 @@
-from prompt_toolkit import Application, ANSI, HTML
+from prompt_toolkit import Application, ANSI
 from prompt_toolkit.layout.containers import HSplit, VSplit, Window
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.controls import FormattedTextControl

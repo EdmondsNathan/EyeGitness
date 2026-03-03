@@ -1,23 +1,15 @@
 import subprocess
 
 def diff_unstaged() -> str:
-    diff = subprocess.Popen([
-        "git",
-        "diff",
-        ],
-        stdout=subprocess.PIPE
-    )
-
-    grep = subprocess.run([
-        "grep", 
-        "-e",
-        r"^-\+",
-        "-e",
-        r"^\+\+",
-        ],
-        stdin=diff.stdout,
+    result = subprocess.run(
+        ["git", "diff"],
         capture_output=True,
         text=True
-    ).stdout
+    )
 
-    return grep
+    lines = []
+    for line in result.stdout.splitlines():
+        if line.startswith("+") or line.startswith("-"):
+            lines.append(line)
+
+    return "\n".join(lines) + "\n" if lines else ""

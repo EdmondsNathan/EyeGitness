@@ -1,5 +1,5 @@
 import subprocess
-# watch -n1 --color -t "git diff --stat --color"
+
 def stat_unstaged() -> str:
     stat = subprocess.run([
         "git",
