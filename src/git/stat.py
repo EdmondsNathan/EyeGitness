@@ -1,6 +1,6 @@
 import subprocess
 
-def stat_unstaged() -> str:
+def stat_modified() -> str:
     stat = subprocess.run([
         "git",
         "diff",

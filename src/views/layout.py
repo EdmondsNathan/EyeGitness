@@ -4,18 +4,18 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 
-from git.diff import diff_unstaged
-from git.stat import stat_unstaged
+from git.diff import diff_modified
+from git.stat import stat_modified
 from ansi.colorizer import diff_colorize
 
 
 def build_layout() -> Layout:
     left_pane = HSplit([
-        Window(content=FormattedTextControl(lambda: ANSI(stat_unstaged()), show_cursor=False)),
+        Window(content=FormattedTextControl(lambda: ANSI(stat_modified()), show_cursor=False)),
     ], width=D(weight=1))
 
     right_pane = HSplit([
-        Window(content=FormattedTextControl(lambda: ANSI(diff_colorize(diff_unstaged())), show_cursor=False)),
+        Window(content=FormattedTextControl(lambda: ANSI(diff_colorize(diff_modified())), show_cursor=False)),
     ], width=D(weight=1))
 
     root_container = VSplit([

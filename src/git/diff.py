@@ -1,6 +1,6 @@
 import subprocess
 
-def diff_unstaged() -> str:
+def diff_modified() -> str:
     result = subprocess.run(
         ["git", "diff"],
         capture_output=True,
