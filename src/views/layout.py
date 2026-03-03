@@ -9,7 +9,7 @@ from git.diff import diff_modified, diff_staged
 from git.stat import (
     list_modified, list_staged, list_untracked, list_unmodified,
 )
-from ansi.colorizer import diff_colorize, ansi_hslice
+from ansi.colorizer import diff_colorize, ansi_hslice, ansi_visible_len
 from ansi.codes import INVERT, RESET, GREEN
 
 TAB_LABELS = ["[1] Untracked", "[2] Unmodified", "[3] Modified", "[4] Staged"]
@@ -81,10 +81,19 @@ def _right_content() -> str:
         return ""
 
     lines = text.splitlines()
-    offset = state.diff_scroll_offset
-    visible = lines[offset:]
-    if not visible:
+    if not lines:
         return " (empty)\n"
+
+    # Clamp vertical scroll
+    max_vscroll = max(0, len(lines) - 1)
+    state.diff_scroll_offset = min(state.diff_scroll_offset, max_vscroll)
+
+    # Clamp horizontal scroll
+    max_width = max(ansi_visible_len(line) for line in lines)
+    max_hscroll = max(0, max_width - 1)
+    state.diff_hscroll_offset = min(state.diff_hscroll_offset, max_hscroll)
+
+    visible = lines[state.diff_scroll_offset:]
     hoffset = state.diff_hscroll_offset
     if hoffset > 0:
         visible = [ansi_hslice(line, hoffset) for line in visible]

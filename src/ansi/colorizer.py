@@ -23,6 +23,21 @@ def ansi_hslice(line: str, offset: int) -> str:
     return ''.join(result)
 
 
+def ansi_visible_len(line: str) -> int:
+    """Count visible characters, ignoring ANSI escape sequences."""
+    length = 0
+    i = 0
+    while i < len(line):
+        if line[i] == '\033':
+            while i < len(line) and line[i] != 'm':
+                i += 1
+            i += 1
+        else:
+            length += 1
+            i += 1
+    return length
+
+
 def diff_colorize(diff: str) -> str:
     result = ""
     for line in diff.splitlines():
