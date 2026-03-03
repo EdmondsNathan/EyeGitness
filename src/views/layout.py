@@ -11,11 +11,11 @@ from ansi.colorizer import diff_colorize
 
 def build_layout() -> Layout:
     left_pane = HSplit([
-        Window(content=FormattedTextControl(ANSI(stat_unstaged()), show_cursor=False)),
+        Window(content=FormattedTextControl(lambda: ANSI(stat_unstaged()), show_cursor=False)),
     ], width=D(weight=1))
 
     right_pane = HSplit([
-        Window(content=FormattedTextControl(ANSI(diff_colorize(diff_unstaged())), show_cursor=False)),
+        Window(content=FormattedTextControl(lambda: ANSI(diff_colorize(diff_unstaged())), show_cursor=False)),
     ], width=D(weight=1))
 
     root_container = VSplit([
