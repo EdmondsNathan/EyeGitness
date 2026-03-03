@@ -1,0 +1,6 @@
+ESC = "\033"
+RED = ESC + "[31m"
+GREEN = ESC + "[32m"
+RESET = ESC + "[0m"
+UNDERLINE = ESC + "[4m"
+INVERT = ESC + "[7m"
