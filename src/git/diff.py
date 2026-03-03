@@ -1,12 +1,11 @@
 import subprocess
 
 
-def diff_modified() -> str:
-    result = subprocess.run(
-        ["git", "diff"],
-        capture_output=True,
-        text=True
-    )
+def diff_modified(files: list[str] | None = None) -> str:
+    cmd = ["git", "diff"]
+    if files:
+        cmd += ["--"] + files
+    result = subprocess.run(cmd, capture_output=True, text=True)
 
     lines = []
     for line in result.stdout.splitlines():
@@ -16,12 +15,11 @@ def diff_modified() -> str:
     return "\n".join(lines) + "\n" if lines else ""
 
 
-def diff_staged() -> str:
-    result = subprocess.run(
-        ["git", "diff", "--cached"],
-        capture_output=True,
-        text=True
-    )
+def diff_staged(files: list[str] | None = None) -> str:
+    cmd = ["git", "diff", "--cached"]
+    if files:
+        cmd += ["--"] + files
+    result = subprocess.run(cmd, capture_output=True, text=True)
 
     lines = []
     for line in result.stdout.splitlines():
