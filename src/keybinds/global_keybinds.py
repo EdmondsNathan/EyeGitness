@@ -1,13 +1,13 @@
 from prompt_toolkit.key_binding import KeyBindings
 
 import state
-from git.diff import diff_modified, diff_staged
+from git.diff import diff_modified, diff_staged, diff_untracked
 
 global_keybinds = KeyBindings()
 
 
 def _is_interactive_tab():
-    return state.current_tab in (3, 4)
+    return state.current_tab in (1, 3, 4)
 
 
 @global_keybinds.add('q')
@@ -67,6 +67,23 @@ def _(event):
     event.app.invalidate()
 
 
+@global_keybinds.add('J')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    state.diff_scroll_offset += 1
+    event.app.invalidate()
+
+
+@global_keybinds.add('K')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.diff_scroll_offset > 0:
+        state.diff_scroll_offset -= 1
+    event.app.invalidate()
+
+
 @global_keybinds.add('down')
 def _(event):
     if not _is_interactive_tab():
@@ -107,7 +124,7 @@ def _(event):
     event.app.invalidate()
 
 
-# Focus switching: tab, h, l (interactive tabs only)
+# Focus switching: tab (interactive tabs only)
 @global_keybinds.add('tab')
 def _(event):
     if not _is_interactive_tab():
@@ -116,23 +133,43 @@ def _(event):
     event.app.invalidate()
 
 
+# Horizontal scroll: H, L (always scroll right pane)
+@global_keybinds.add('H')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
+    event.app.invalidate()
+
+
+@global_keybinds.add('L')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    state.diff_hscroll_offset += 4
+    event.app.invalidate()
+
+
+# Horizontal scroll: h, l (when right pane focused)
 @global_keybinds.add('h')
 def _(event):
     if not _is_interactive_tab():
         return
-    state.focus = 'left'
-    event.app.invalidate()
+    if state.focus == 'right':
+        state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
+        event.app.invalidate()
 
 
 @global_keybinds.add('l')
 def _(event):
     if not _is_interactive_tab():
         return
-    state.focus = 'right'
-    event.app.invalidate()
+    if state.focus == 'right':
+        state.diff_hscroll_offset += 4
+        event.app.invalidate()
 
 
-# Horizontal scroll (right pane only)
+# Horizontal scroll (arrow keys, right pane only)
 @global_keybinds.add('right')
 def _(event):
     if not _is_interactive_tab():
@@ -161,13 +198,14 @@ def _(event):
 
     filename = state.file_cache[state.cursor_index]
 
-    # Check the file if not already checked
-    if filename not in state.checked_files:
-        state.checked_files.add(filename)
+    # Set checked to only this file
+    state.checked_files = {filename}
 
     # Get the raw diff to find the file's line offset
     checked = sorted(state.checked_files)
-    if state.current_tab == 3:
+    if state.current_tab == 1:
+        raw = diff_untracked(checked)
+    elif state.current_tab == 3:
         raw = diff_modified(checked)
     elif state.current_tab == 4:
         raw = diff_staged(checked)
@@ -183,7 +221,6 @@ def _(event):
             break
 
     state.diff_hscroll_offset = 0
-    state.focus = 'right'
     event.app.invalidate()
 
 

@@ -5,7 +5,7 @@ from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 
 import state
-from git.diff import diff_modified, diff_staged
+from git.diff import diff_modified, diff_staged, diff_untracked
 from git.stat import (
     list_modified, list_staged, list_untracked, list_unmodified,
 )
@@ -23,7 +23,7 @@ _list_funcs = {
 
 
 def _is_simple_tab():
-    return state.current_tab in (1, 2)
+    return state.current_tab in (2,)
 
 
 def _tab_bar() -> str:
@@ -73,7 +73,9 @@ def _left_content() -> str:
 def _right_content() -> str:
     checked = sorted(state.checked_files)
     tab = state.current_tab
-    if tab == 3:
+    if tab == 1:
+        text = diff_colorize(diff_untracked(checked or state.file_cache))
+    elif tab == 3:
         text = diff_colorize(diff_modified(checked or None))
     elif tab == 4:
         text = diff_colorize(diff_staged(checked or None))
@@ -107,14 +109,24 @@ def _left_title() -> str:
 
 def _right_title() -> str:
     indicator = ">" if state.focus == 'right' else " "
-    return f"{indicator} Diff"
+    label = "Contents" if state.current_tab == 1 else "Diff"
+    return f"{indicator} {label}"
 
 
 def _build_simple_body():
-    """Single pane for untracked/unmodified tabs."""
-    return Window(content=FormattedTextControl(
-        lambda: ANSI(_simple_content()), show_cursor=False
-    ))
+    """Single pane for unmodified tab."""
+    title = Window(
+        content=FormattedTextControl(
+            lambda: ANSI(f"{GREEN}> Files{RESET}"), show_cursor=False
+        ),
+        height=1,
+    )
+    return HSplit([
+        title,
+        Window(content=FormattedTextControl(
+            lambda: ANSI(_simple_content()), show_cursor=False
+        )),
+    ])
 
 
 def _build_split_body():
