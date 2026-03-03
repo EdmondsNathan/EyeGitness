@@ -1,6 +1,7 @@
 from prompt_toolkit.key_binding import KeyBindings
 
 import state
+from git.diff import diff_modified, diff_staged
 
 global_keybinds = KeyBindings()
 
@@ -127,6 +128,61 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
+    state.focus = 'right'
+    event.app.invalidate()
+
+
+# Horizontal scroll (right pane only)
+@global_keybinds.add('right')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.focus == 'right':
+        state.diff_hscroll_offset += 4
+        event.app.invalidate()
+
+
+@global_keybinds.add('left')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.focus == 'right':
+        state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
+        event.app.invalidate()
+
+
+# Enter: jump to file in diff
+@global_keybinds.add('enter')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.focus != 'left' or not state.file_cache:
+        return
+
+    filename = state.file_cache[state.cursor_index]
+
+    # Check the file if not already checked
+    if filename not in state.checked_files:
+        state.checked_files.add(filename)
+
+    # Get the raw diff to find the file's line offset
+    checked = sorted(state.checked_files)
+    if state.current_tab == 3:
+        raw = diff_modified(checked)
+    elif state.current_tab == 4:
+        raw = diff_staged(checked)
+    else:
+        return
+
+    # Search for +++ b/filename (always present, identifies the file)
+    target = f"+++ b/{filename}"
+    lines = raw.splitlines()
+    for i, line in enumerate(lines):
+        if line == target:
+            state.diff_scroll_offset = max(0, i - 1)
+            break
+
+    state.diff_hscroll_offset = 0
     state.focus = 'right'
     event.app.invalidate()
 
