@@ -78,25 +78,6 @@ def _(event):
     event.app.invalidate()
 
 
-# # up/down always navigate file list
-# @global_keybinds.add('down')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     if state.file_cache and state.cursor_index < len(state.file_cache) - 1:
-#         state.cursor_index += 1
-#     event.app.invalidate()
-#
-#
-# @global_keybinds.add('up')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     if state.cursor_index > 0:
-#         state.cursor_index -= 1
-#     event.app.invalidate()
-
-
 # Jump to top/bottom: g/G always control diff
 @global_keybinds.add('g')
 def _(event):
@@ -165,40 +146,6 @@ def _(event):
         return
     state.diff_hscroll_offset += 4
     event.app.invalidate()
-
-
-# # Horizontal scroll: h/l always scroll diff
-# @global_keybinds.add('h')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
-#     event.app.invalidate()
-#
-#
-# @global_keybinds.add('l')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     state.diff_hscroll_offset += 4
-#     event.app.invalidate()
-
-
-# # Horizontal scroll: arrow keys always scroll diff
-# @global_keybinds.add('right')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     state.diff_hscroll_offset += 4
-#     event.app.invalidate()
-#
-#
-# @global_keybinds.add('left')
-# def _(event):
-#     if not _is_interactive_tab():
-#         return
-#     state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
-#     event.app.invalidate()
 
 
 # Enter: jump to file in diff
