@@ -1,3 +1,5 @@
+import os
+
 from prompt_toolkit import ANSI
 from prompt_toolkit.layout.containers import HSplit, VSplit, Window, DynamicContainer
 from prompt_toolkit.layout.dimension import D
@@ -7,10 +9,10 @@ from prompt_toolkit.layout.layout import Layout
 import state
 from git.diff import diff_modified, diff_staged, diff_untracked
 from git.stat import (
-    list_modified, list_staged, list_untracked, list_unmodified,
+    list_modified, list_staged, list_untracked, list_unmodified, get_branch,
 )
 from ansi.colorizer import diff_colorize, ansi_hslice, ansi_visible_len
-from ansi.codes import INVERT, RESET, GREEN
+from ansi.codes import INVERT, RESET, GREEN, DIM, BOLD, YELLOW
 
 TAB_LABELS = ["[1] Untracked", "[2] Unmodified", "[3] Modified", "[4] Staged"]
 
@@ -173,6 +175,58 @@ def _dynamic_body():
     return _build_split_body()
 
 
+def _pad_right(left: str, right: str) -> str:
+    """Combine left and right text, padding so right is right-aligned."""
+    try:
+        width = os.get_terminal_size().columns
+    except OSError:
+        width = 80
+    left_len = ansi_visible_len(left)
+    right_len = ansi_visible_len(right)
+    gap = max(1, width - left_len - right_len)
+    return left + " " * gap + right
+
+
+def _status_row1() -> str:
+    branch = get_branch() or "detached"
+    total = len(state.file_cache)
+    pos = state.cursor_index + 1 if total > 0 else 0
+
+    left_parts = [f"{BOLD}[{branch}]{RESET}"]
+    if not _is_simple_tab():
+        left_parts.append(f"  {pos}/{total}")
+        n_checked = len(state.checked_files)
+        if n_checked > 0:
+            left_parts.append(f"  {YELLOW}{n_checked} selected{RESET}")
+    else:
+        left_parts.append(f"  {total} files")
+
+    left = "".join(left_parts)
+
+    counts = []
+    counts.append(f"M:{len(list_modified())}")
+    counts.append(f"S:{len(list_staged())}")
+    counts.append(f"U:{len(list_untracked())}")
+    right = "  ".join(counts)
+
+    return f"{DIM}{INVERT}{_pad_right(f' {left}', f'{right} ')}{RESET}"
+
+
+def _status_row2() -> str:
+    if _is_simple_tab():
+        left = " 1-4:tabs  q:quit"
+        right = ""
+    else:
+        left = " j/k:navigate  Space:select  a:all  Enter:jump  q:quit"
+        right_parts = []
+        if state.diff_scroll_offset > 0:
+            right_parts.append(f"Line {state.diff_scroll_offset}")
+        right_parts.append("H/L:scroll")
+        right = "  ".join(right_parts)
+
+    return f"{DIM}{INVERT}{_pad_right(left, f'{right} ')}{RESET}"
+
+
 def build_layout() -> Layout:
     tab_bar = Window(
         content=FormattedTextControl(lambda: ANSI(_tab_bar()), show_cursor=False),
@@ -183,10 +237,21 @@ def build_layout() -> Layout:
 
     body = DynamicContainer(_dynamic_body)
 
+    status_row1 = Window(
+        content=FormattedTextControl(lambda: ANSI(_status_row1()), show_cursor=False),
+        height=1,
+    )
+    status_row2 = Window(
+        content=FormattedTextControl(lambda: ANSI(_status_row2()), show_cursor=False),
+        height=1,
+    )
+
     root_container = HSplit([
         tab_bar,
         separator,
         body,
+        status_row1,
+        status_row2,
     ])
 
     return Layout(root_container)

@@ -1,6 +1,15 @@
 import subprocess
 
 
+def get_branch() -> str:
+    result = subprocess.run(
+        ["git", "branch", "--show-current"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
 def list_modified() -> list[str]:
     result = subprocess.run(
         ["git", "diff", "--name-only"],
