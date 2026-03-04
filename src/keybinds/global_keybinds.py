@@ -109,6 +109,60 @@ def _(event):
     event.app.invalidate()
 
 
+# Jump to top/bottom: g/G
+@global_keybinds.add('g')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.focus == 'left':
+        state.cursor_index = 0
+    else:
+        state.diff_scroll_offset = 0
+    event.app.invalidate()
+
+
+@global_keybinds.add('G')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    if state.focus == 'left':
+        if state.file_cache:
+            state.cursor_index = len(state.file_cache) - 1
+    else:
+        state.diff_scroll_offset = 999999  # clamped by layout
+    event.app.invalidate()
+
+
+# Half-page scroll: d/u
+def _half_page(event):
+    return max(1, event.app.output.get_size().rows // 2)
+
+
+@global_keybinds.add('d')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    half = _half_page(event)
+    if state.focus == 'left':
+        if state.file_cache:
+            state.cursor_index = min(state.cursor_index + half, len(state.file_cache) - 1)
+    else:
+        state.diff_scroll_offset += half
+    event.app.invalidate()
+
+
+@global_keybinds.add('u')
+def _(event):
+    if not _is_interactive_tab():
+        return
+    half = _half_page(event)
+    if state.focus == 'left':
+        state.cursor_index = max(state.cursor_index - half, 0)
+    else:
+        state.diff_scroll_offset = max(0, state.diff_scroll_offset - half)
+    event.app.invalidate()
+
+
 # Space: toggle check (interactive tabs only)
 @global_keybinds.add(' ')
 def _(event):
