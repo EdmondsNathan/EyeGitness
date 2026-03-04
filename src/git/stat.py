@@ -10,6 +10,29 @@ def get_branch() -> str:
     return result.stdout.strip()
 
 
+def get_head_short() -> str:
+    result = subprocess.run(
+        ["git", "log", "-1", "--format=%h %s"],
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
+def get_ahead_behind() -> tuple[int, int]:
+    result = subprocess.run(
+        ["git", "rev-list", "--left-right", "--count", "@{upstream}...HEAD"],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        return (0, 0)
+    parts = result.stdout.strip().split()
+    if len(parts) == 2:
+        return (int(parts[1]), int(parts[0]))
+    return (0, 0)
+
+
 def list_modified() -> list[str]:
     result = subprocess.run(
         ["git", "diff", "--name-only"],

@@ -10,6 +10,7 @@ import state
 from git.diff import diff_modified, diff_staged, diff_untracked
 from git.stat import (
     list_modified, list_staged, list_untracked, list_unmodified, get_branch,
+    get_head_short, get_ahead_behind,
 )
 from ansi.colorizer import diff_colorize, ansi_hslice, ansi_visible_len
 from ansi.codes import INVERT, RESET, GREEN, DIM, BOLD, YELLOW
@@ -203,11 +204,19 @@ def _status_row1() -> str:
 
     left = "".join(left_parts)
 
-    counts = []
-    counts.append(f"M:{len(list_modified())}")
-    counts.append(f"S:{len(list_staged())}")
-    counts.append(f"U:{len(list_untracked())}")
-    right = "  ".join(counts)
+    right_parts = []
+    ahead, behind = get_ahead_behind()
+    if ahead or behind:
+        ab = []
+        if ahead:
+            ab.append(f"+{ahead}")
+        if behind:
+            ab.append(f"-{behind}")
+        right_parts.append("".join(ab))
+    head = get_head_short()
+    if head:
+        right_parts.append(head)
+    right = "  ".join(right_parts)
 
     return f"{DIM}{INVERT}{_pad_right(f' {left}', f'{right} ')}{RESET}"
 
