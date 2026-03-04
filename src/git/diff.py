@@ -1,18 +1,21 @@
 import subprocess
 
 
+def _filter_diff(raw: str) -> str:
+    lines = []
+    for line in raw.splitlines():
+        if line.startswith("diff ") or line.startswith("index "):
+            continue
+        lines.append(line)
+    return "\n".join(lines) + "\n" if lines else ""
+
+
 def diff_modified(files: list[str] | None = None) -> str:
     cmd = ["git", "diff"]
     if files:
         cmd += ["--"] + files
     result = subprocess.run(cmd, capture_output=True, text=True)
-
-    lines = []
-    for line in result.stdout.splitlines():
-        if line.startswith("+") or line.startswith("-"):
-            lines.append(line)
-
-    return "\n".join(lines) + "\n" if lines else ""
+    return _filter_diff(result.stdout)
 
 
 def diff_staged(files: list[str] | None = None) -> str:
@@ -20,13 +23,7 @@ def diff_staged(files: list[str] | None = None) -> str:
     if files:
         cmd += ["--"] + files
     result = subprocess.run(cmd, capture_output=True, text=True)
-
-    lines = []
-    for line in result.stdout.splitlines():
-        if line.startswith("+") or line.startswith("-"):
-            lines.append(line)
-
-    return "\n".join(lines) + "\n" if lines else ""
+    return _filter_diff(result.stdout)
 
 
 def diff_untracked(files: list[str] | None = None) -> str:

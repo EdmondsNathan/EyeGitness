@@ -1,4 +1,4 @@
-from ansi.codes import INVERT, RESET, GREEN, RED
+from ansi.codes import INVERT, RESET, GREEN, RED, CYAN, DIM
 
 
 def ansi_hslice(line: str, offset: int) -> str:
@@ -41,13 +41,16 @@ def ansi_visible_len(line: str) -> int:
 def diff_colorize(diff: str) -> str:
     result = ""
     for line in diff.splitlines():
-        if line.startswith("+++") or line.startswith("---"):
+        if line.startswith("@@"):
+            result += CYAN
+        elif line.startswith("+++") or line.startswith("---"):
             result += INVERT
-
-        if line.startswith("+"):
+        elif line.startswith("+"):
             result += GREEN
         elif line.startswith("-"):
             result += RED
+        else:
+            result += DIM
 
         result += f"{line}{RESET}\n"
 

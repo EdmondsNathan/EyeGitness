@@ -21,6 +21,8 @@ _list_funcs = {
     4: list_staged,
 }
 
+_tab_list_funcs = [list_untracked, list_unmodified, list_modified, list_staged]
+
 
 def _is_simple_tab():
     return state.current_tab in (2,)
@@ -28,12 +30,14 @@ def _is_simple_tab():
 
 def _tab_bar() -> str:
     parts = []
-    for i, label in enumerate(TAB_LABELS, start=1):
+    for i, (label, list_func) in enumerate(zip(TAB_LABELS, _tab_list_funcs), start=1):
+        count = len(list_func())
+        text = f" {label} ({count}) "
         if i == state.current_tab:
-            parts.append(f"\x1b[7m {label} \x1b[0m")
+            parts.append(f"\x1b[7m{text}\x1b[0m")
         else:
-            parts.append(f" {label} ")
-    return "  ".join(parts)
+            parts.append(text)
+    return " ".join(parts)
 
 
 def _refresh_files():
