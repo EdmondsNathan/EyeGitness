@@ -2,7 +2,6 @@ current_tab = 3  # 1=Untracked, 2=Unmodified, 3=Modified, 4=Staged
 cursor_index = 0
 checked_files: set[str] = set()
 file_cache: list[str] = []
-focus = 'left'  # 'left' or 'right'
 diff_scroll_offset = 0
 diff_hscroll_offset = 0
 
@@ -21,10 +20,9 @@ def refresh_file_list(file_list: list[str]):
 
 
 def reset_for_tab():
-    global cursor_index, checked_files, file_cache, focus, diff_scroll_offset, diff_hscroll_offset
+    global cursor_index, checked_files, file_cache, diff_scroll_offset, diff_hscroll_offset
     cursor_index = 0
     checked_files = set()
     file_cache = []
-    focus = 'left'
     diff_scroll_offset = 0
     diff_hscroll_offset = 0

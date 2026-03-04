@@ -61,13 +61,12 @@ def _left_content() -> str:
     if not files:
         return " (no files)\n"
 
-    focus_left = state.focus == 'left'
     lines = []
     for i, f in enumerate(files):
         checked = "x" if f in state.checked_files else " "
         cursor = ""
         end = ""
-        if focus_left and i == state.cursor_index:
+        if i == state.cursor_index:
             cursor = INVERT
             end = RESET
         lines.append(f"{cursor}[{checked}] {f}{end}")
@@ -107,14 +106,12 @@ def _right_content() -> str:
 
 
 def _left_title() -> str:
-    indicator = ">" if state.focus == 'left' else " "
-    return f"{indicator} Files"
+    return " Files"
 
 
 def _right_title() -> str:
-    indicator = ">" if state.focus == 'right' else " "
     label = "Contents" if state.current_tab == 1 else "Diff"
-    return f"{indicator} {label}"
+    return f" {label}"
 
 
 def _build_simple_body():
