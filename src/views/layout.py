@@ -217,11 +217,11 @@ def _status_row2() -> str:
         left = " 1-4:tabs  q:quit"
         right = ""
     else:
-        left = " j/k:navigate  Space:select  a:all  Enter:jump  q:quit"
+        left = " j/k:navigate  Space:select  a:all  Enter:focus  q:quit"
         right_parts = []
         if state.diff_scroll_offset > 0:
             right_parts.append(f"Line {state.diff_scroll_offset}")
-        right_parts.append("H/L:scroll")
+        right_parts.append("J/K:scroll  g/G:top/bottom  d/u:jump")
         right = "  ".join(right_parts)
 
     return f"{DIM}{INVERT}{_pad_right(left, f'{right} ')}{RESET}"
