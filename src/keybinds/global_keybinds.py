@@ -1,13 +1,13 @@
 from prompt_toolkit.key_binding import KeyBindings
 
-import state
+from state import app_state
 from git.diff import diff_modified, diff_staged, diff_untracked
 
 global_keybinds = KeyBindings()
 
 
 def _is_interactive_tab():
-    return state.current_tab in (1, 3, 4)
+    return app_state.current_tab in (1, 3, 4)
 
 
 @global_keybinds.add('q')
@@ -16,8 +16,8 @@ def _(event):
 
 
 def _switch_tab(event, tab):
-    state.current_tab = tab
-    state.reset_for_tab()
+    app_state.current_tab = tab
+    app_state.reset_for_tab()
     event.app.invalidate()
 
 
@@ -46,8 +46,8 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if state.file_cache and state.cursor_index < len(state.file_cache) - 1:
-        state.cursor_index += 1
+    if app_state.file_cache and app_state.cursor_index < len(app_state.file_cache) - 1:
+        app_state.cursor_index += 1
     event.app.invalidate()
 
 
@@ -55,8 +55,8 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if state.cursor_index > 0:
-        state.cursor_index -= 1
+    if app_state.cursor_index > 0:
+        app_state.cursor_index -= 1
     event.app.invalidate()
 
 
@@ -65,7 +65,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_scroll_offset += 1
+    app_state.diff_scroll_offset += 1
     event.app.invalidate()
 
 
@@ -73,8 +73,8 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if state.diff_scroll_offset > 0:
-        state.diff_scroll_offset -= 1
+    if app_state.diff_scroll_offset > 0:
+        app_state.diff_scroll_offset -= 1
     event.app.invalidate()
 
 
@@ -83,7 +83,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_scroll_offset = 0
+    app_state.diff_scroll_offset = 0
     event.app.invalidate()
 
 
@@ -91,7 +91,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_scroll_offset = 999999  # clamped by layout
+    app_state.diff_scroll_offset = 999999  # clamped by layout
     event.app.invalidate()
 
 
@@ -104,7 +104,7 @@ def _half_page(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_scroll_offset += _half_page(event)
+    app_state.diff_scroll_offset += _half_page(event)
     event.app.invalidate()
 
 
@@ -112,7 +112,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_scroll_offset = max(0, state.diff_scroll_offset - _half_page(event))
+    app_state.diff_scroll_offset = max(0, app_state.diff_scroll_offset - _half_page(event))
     event.app.invalidate()
 
 
@@ -121,13 +121,13 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if state.file_cache:
-        f = state.file_cache[state.cursor_index]
-        if f in state.checked_files:
-            state.checked_files.discard(f)
+    if app_state.file_cache:
+        f = app_state.file_cache[app_state.cursor_index]
+        if f in app_state.checked_files:
+            app_state.checked_files.discard(f)
         else:
-            state.checked_files.add(f)
-        state.diff_scroll_offset = 0
+            app_state.checked_files.add(f)
+        app_state.diff_scroll_offset = 0
     event.app.invalidate()
 
 
@@ -136,7 +136,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_hscroll_offset = max(0, state.diff_hscroll_offset - 4)
+    app_state.diff_hscroll_offset = max(0, app_state.diff_hscroll_offset - 4)
     event.app.invalidate()
 
 
@@ -144,7 +144,7 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    state.diff_hscroll_offset += 4
+    app_state.diff_hscroll_offset += 4
     event.app.invalidate()
 
 
@@ -153,21 +153,21 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if not state.file_cache:
+    if not app_state.file_cache:
         return
 
-    filename = state.file_cache[state.cursor_index]
+    filename = app_state.file_cache[app_state.cursor_index]
 
     # Set checked to only this file
-    state.checked_files = {filename}
+    app_state.checked_files = {filename}
 
     # Get the raw diff to find the file's line offset
-    checked = sorted(state.checked_files)
-    if state.current_tab == 1:
+    checked = sorted(app_state.checked_files)
+    if app_state.current_tab == 1:
         raw = diff_untracked(checked)
-    elif state.current_tab == 3:
+    elif app_state.current_tab == 3:
         raw = diff_modified(checked)
-    elif state.current_tab == 4:
+    elif app_state.current_tab == 4:
         raw = diff_staged(checked)
     else:
         return
@@ -177,10 +177,10 @@ def _(event):
     lines = raw.splitlines()
     for i, line in enumerate(lines):
         if line == target:
-            state.diff_scroll_offset = max(0, i - 1)
+            app_state.diff_scroll_offset = max(0, i - 1)
             break
 
-    state.diff_hscroll_offset = 0
+    app_state.diff_hscroll_offset = 0
     event.app.invalidate()
 
 
@@ -189,10 +189,10 @@ def _(event):
 def _(event):
     if not _is_interactive_tab():
         return
-    if state.file_cache:
-        if state.checked_files == set(state.file_cache):
-            state.checked_files = set()
+    if app_state.file_cache:
+        if app_state.checked_files == set(app_state.file_cache):
+            app_state.checked_files = set()
         else:
-            state.checked_files = set(state.file_cache)
-        state.diff_scroll_offset = 0
+            app_state.checked_files = set(app_state.file_cache)
+        app_state.diff_scroll_offset = 0
     event.app.invalidate()
