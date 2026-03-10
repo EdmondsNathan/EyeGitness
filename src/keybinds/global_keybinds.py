@@ -4,7 +4,7 @@ from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
 
 from state import Tab, app_state
 from git.diff import diff_modified, diff_staged, diff_untracked
-from git.stat import intent_to_add, stage_files
+from git.stat import intent_to_add, stage_files, unstage_files
 from views.tab_bar import TAB_BY_NUMBER
 
 global_keybinds = KeyBindings()
@@ -187,6 +187,14 @@ def stage_checked(event: KeyPressEvent) -> None:
     action = STAGE_ACTION.get(app_state.current_tab)
     if action and app_state.checked_files:
         action(sorted(app_state.checked_files))
+        app_state.reset_for_tab()
+        event.app.invalidate()
+
+
+@global_keybinds.add('S')
+def unstage_checked(event: KeyPressEvent) -> None:
+    if app_state.current_tab is Tab.STAGED and app_state.checked_files:
+        unstage_files(sorted(app_state.checked_files))
         app_state.reset_for_tab()
         event.app.invalidate()
 
