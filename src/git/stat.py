@@ -43,6 +43,14 @@ def list_untracked() -> list[str]:
     return _list_files("ls-files", "--others", "--exclude-standard")
 
 
+def intent_to_add(files: list[str]) -> None:
+    _run_git("add", "-N", "--", *files)
+
+
+def stage_files(files: list[str]) -> None:
+    _run_git("add", "--", *files)
+
+
 def list_unmodified() -> list[str]:
     all_tracked = set(_list_files("ls-files"))
     changed = set(list_modified()) | set(list_staged())
