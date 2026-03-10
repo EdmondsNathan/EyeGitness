@@ -1,31 +1,32 @@
 from __future__ import annotations
 
-from state import app_state
+from collections.abc import Callable
+
+from state import Tab, app_state
 from git.stat import list_modified, list_staged, list_untracked, list_unmodified
+from ansi.codes import INVERT, RESET
 
-TAB_LABELS = ["[1] Untracked", "[2] Unmodified", "[3] Modified", "[4] Staged"]
+TAB_CONFIG: list[tuple[Tab, str, Callable[[], list[str]]]] = [
+    (Tab.UNTRACKED, "[1] Untracked", list_untracked),
+    (Tab.UNMODIFIED, "[2] Unmodified", list_unmodified),
+    (Tab.MODIFIED, "[3] Modified", list_modified),
+    (Tab.STAGED, "[4] Staged", list_staged),
+]
 
-TAB_LIST_FUNCS = [list_untracked, list_unmodified, list_modified, list_staged]
+TAB_BY_NUMBER: dict[int, Tab] = {i: tab for i, (tab, _, _) in enumerate(TAB_CONFIG, 1)}
 
-LIST_FUNCS = {
-    1: list_untracked,
-    2: list_unmodified,
-    3: list_modified,
-    4: list_staged,
+LIST_FUNC_BY_TAB: dict[Tab, Callable[[], list[str]]] = {
+    tab: func for tab, _, func in TAB_CONFIG
 }
 
 
-def is_simple_tab() -> bool:
-    return app_state.current_tab in (2,)
-
-
 def render_tab_bar() -> str:
-    parts = []
-    for i, (label, list_func) in enumerate(zip(TAB_LABELS, TAB_LIST_FUNCS), start=1):
+    parts: list[str] = []
+    for tab, label, list_func in TAB_CONFIG:
         count = len(list_func())
         text = f" {label} ({count}) "
-        if i == app_state.current_tab:
-            parts.append(f"\x1b[7m{text}\x1b[0m")
+        if tab == app_state.current_tab:
+            parts.append(f"{INVERT}{text}{RESET}")
         else:
             parts.append(text)
     return " ".join(parts)

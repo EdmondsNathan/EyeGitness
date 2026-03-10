@@ -6,25 +6,21 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 
-from state import app_state
-from views.tab_bar import is_simple_tab, render_tab_bar
+from state import Tab, app_state
+from views.tab_bar import render_tab_bar
 from views.file_list import render_simple_content, render_file_list
 from views.diff_view import render_diff
 from views.status_bar import render_status_row1, render_status_row2
 from ansi.codes import RESET, GREEN
 
 
-def _left_title() -> str:
-    return " Files"
-
-
-def _right_title() -> str:
-    label = "Contents" if app_state.current_tab == 1 else "Diff"
+def _right_pane_title() -> str:
+    label = "Contents" if app_state.current_tab == Tab.UNTRACKED else "Diff"
     return f" {label}"
 
 
 def _build_simple_body() -> HSplit:
-    """Single pane for unmodified tab."""
+    """Single pane for the unmodified tab."""
     title = Window(
         content=FormattedTextControl(
             lambda: ANSI(f"{GREEN}> Files{RESET}"), show_cursor=False
@@ -40,14 +36,13 @@ def _build_simple_body() -> HSplit:
 
 
 def _build_split_body() -> VSplit:
-    """Split pane with checkboxes + diff for modified/staged tabs."""
+    """Two-pane layout: file list on the left, diff on the right."""
     left_title = Window(
         content=FormattedTextControl(
-            lambda: ANSI(f"{GREEN}{_left_title()}{RESET}"), show_cursor=False
+            lambda: ANSI(f"{GREEN} Files{RESET}"), show_cursor=False
         ),
         height=1,
     )
-
     left_pane = HSplit([
         left_title,
         Window(content=FormattedTextControl(
@@ -57,11 +52,10 @@ def _build_split_body() -> VSplit:
 
     right_title = Window(
         content=FormattedTextControl(
-            lambda: ANSI(f"{GREEN}{_right_title()}{RESET}"), show_cursor=False
+            lambda: ANSI(f"{GREEN}{_right_pane_title()}{RESET}"), show_cursor=False
         ),
         height=1,
     )
-
     right_pane = HSplit([
         right_title,
         Window(content=FormattedTextControl(
@@ -71,15 +65,15 @@ def _build_split_body() -> VSplit:
 
     return VSplit([
         left_pane,
-        Window(width=1, char='│'),
+        Window(width=1, char='|'),
         right_pane,
     ])
 
 
 def _dynamic_body() -> HSplit | VSplit:
-    if is_simple_tab():
-        return _build_simple_body()
-    return _build_split_body()
+    if app_state.current_tab.has_diff_view:
+        return _build_split_body()
+    return _build_simple_body()
 
 
 def build_layout() -> Layout:
@@ -88,7 +82,7 @@ def build_layout() -> Layout:
         height=1,
     )
 
-    separator = Window(height=1, char='─')
+    separator = Window(height=1, char='-')
 
     body = DynamicContainer(_dynamic_body)
 
@@ -101,12 +95,4 @@ def build_layout() -> Layout:
         height=1,
     )
 
-    root_container = HSplit([
-        tab_bar,
-        separator,
-        body,
-        status_row1,
-        status_row2,
-    ])
-
-    return Layout(root_container)
+    return Layout(HSplit([tab_bar, separator, body, status_row1, status_row2]))

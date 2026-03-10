@@ -1,181 +1,170 @@
-from prompt_toolkit.key_binding import KeyBindings
+from __future__ import annotations
 
-from state import app_state
+from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
+
+from state import Tab, app_state
 from git.diff import diff_modified, diff_staged, diff_untracked
+from views.tab_bar import TAB_BY_NUMBER
 
 global_keybinds = KeyBindings()
 
-
-def _is_interactive_tab():
-    return app_state.current_tab in (1, 3, 4)
-
-
-@global_keybinds.add('q')
-def _(event):
-    event.app.exit()
+DIFF_FUNCS = {
+    Tab.UNTRACKED: diff_untracked,
+    Tab.MODIFIED: diff_modified,
+    Tab.STAGED: diff_staged,
+}
 
 
-def _switch_tab(event, tab):
-    app_state.current_tab = tab
-    app_state.reset_for_tab()
-    event.app.invalidate()
+def _requires_diff_view(handler):
+    """Decorator that skips the handler when the active tab has no diff view."""
+    def wrapper(event: KeyPressEvent) -> None:
+        if app_state.current_tab.has_diff_view:
+            handler(event)
+    return wrapper
 
 
-@global_keybinds.add('1')
-def _(event):
-    _switch_tab(event, 1)
+# --- Tab switching ---
+
+def _make_tab_handler(number: int):
+    tab = TAB_BY_NUMBER[number]
+
+    @global_keybinds.add(str(number))
+    def switch_tab(event: KeyPressEvent) -> None:
+        app_state.current_tab = tab
+        app_state.reset_for_tab()
+        event.app.invalidate()
+
+    return switch_tab
 
 
-@global_keybinds.add('2')
-def _(event):
-    _switch_tab(event, 2)
+for _n in TAB_BY_NUMBER:
+    _make_tab_handler(_n)
 
 
-@global_keybinds.add('3')
-def _(event):
-    _switch_tab(event, 3)
+# --- File list navigation ---
 
-
-@global_keybinds.add('4')
-def _(event):
-    _switch_tab(event, 4)
-
-
-# Navigation: j/k always navigate file list
 @global_keybinds.add('j')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def cursor_down(event: KeyPressEvent) -> None:
     if app_state.file_cache and app_state.cursor_index < len(app_state.file_cache) - 1:
         app_state.cursor_index += 1
     event.app.invalidate()
 
 
 @global_keybinds.add('k')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def cursor_up(event: KeyPressEvent) -> None:
     if app_state.cursor_index > 0:
         app_state.cursor_index -= 1
     event.app.invalidate()
 
 
-# J/K always scroll diff
+# --- Diff vertical scroll ---
+
 @global_keybinds.add('J')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def scroll_diff_down(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset += 1
     event.app.invalidate()
 
 
 @global_keybinds.add('K')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def scroll_diff_up(event: KeyPressEvent) -> None:
     if app_state.diff_scroll_offset > 0:
         app_state.diff_scroll_offset -= 1
     event.app.invalidate()
 
 
-# Jump to top/bottom: g/G always control diff
 @global_keybinds.add('g')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def scroll_diff_top(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = 0
     event.app.invalidate()
 
 
 @global_keybinds.add('G')
-def _(event):
-    if not _is_interactive_tab():
-        return
-    app_state.diff_scroll_offset = 999999  # clamped by layout
+@_requires_diff_view
+def scroll_diff_bottom(event: KeyPressEvent) -> None:
+    app_state.diff_scroll_offset = 999_999  # clamped by render_diff
     event.app.invalidate()
 
 
-# Half-page scroll: d/u always control diff
-def _half_page(event):
+def _half_page_size(event: KeyPressEvent) -> int:
     return max(1, event.app.output.get_size().rows // 2)
 
 
 @global_keybinds.add('d')
-def _(event):
-    if not _is_interactive_tab():
-        return
-    app_state.diff_scroll_offset += _half_page(event)
+@_requires_diff_view
+def scroll_diff_half_down(event: KeyPressEvent) -> None:
+    app_state.diff_scroll_offset += _half_page_size(event)
     event.app.invalidate()
 
 
 @global_keybinds.add('u')
-def _(event):
-    if not _is_interactive_tab():
-        return
-    app_state.diff_scroll_offset = max(0, app_state.diff_scroll_offset - _half_page(event))
+@_requires_diff_view
+def scroll_diff_half_up(event: KeyPressEvent) -> None:
+    app_state.diff_scroll_offset = max(0, app_state.diff_scroll_offset - _half_page_size(event))
     event.app.invalidate()
 
 
-# Space: toggle check (interactive tabs only)
-@global_keybinds.add(' ')
-def _(event):
-    if not _is_interactive_tab():
-        return
-    if app_state.file_cache:
-        f = app_state.file_cache[app_state.cursor_index]
-        if f in app_state.checked_files:
-            app_state.checked_files.discard(f)
-        else:
-            app_state.checked_files.add(f)
-        app_state.diff_scroll_offset = 0
-    event.app.invalidate()
+# --- Diff horizontal scroll ---
 
-
-# Horizontal scroll: H/L always scroll diff
 @global_keybinds.add('H')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def scroll_diff_left(event: KeyPressEvent) -> None:
     app_state.diff_hscroll_offset = max(0, app_state.diff_hscroll_offset - 4)
     event.app.invalidate()
 
 
 @global_keybinds.add('L')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def scroll_diff_right(event: KeyPressEvent) -> None:
     app_state.diff_hscroll_offset += 4
     event.app.invalidate()
 
 
-# Enter: jump to file in diff
+# --- File selection ---
+
+@global_keybinds.add(' ')
+@_requires_diff_view
+def toggle_file_selection(event: KeyPressEvent) -> None:
+    if app_state.file_cache:
+        filename = app_state.file_cache[app_state.cursor_index]
+        app_state.checked_files.symmetric_difference_update({filename})
+        app_state.diff_scroll_offset = 0
+    event.app.invalidate()
+
+
+@global_keybinds.add('a')
+@_requires_diff_view
+def toggle_select_all(event: KeyPressEvent) -> None:
+    if app_state.file_cache:
+        all_files = set(app_state.file_cache)
+        if app_state.checked_files == all_files:
+            app_state.checked_files = set()
+        else:
+            app_state.checked_files = all_files
+        app_state.diff_scroll_offset = 0
+    event.app.invalidate()
+
+
 @global_keybinds.add('enter')
-def _(event):
-    if not _is_interactive_tab():
-        return
+@_requires_diff_view
+def focus_file_in_diff(event: KeyPressEvent) -> None:
     if not app_state.file_cache:
         return
 
     filename = app_state.file_cache[app_state.cursor_index]
-
-    # Set checked to only this file
     app_state.checked_files = {filename}
 
-    # Get the raw diff to find the file's line offset
-    checked = sorted(app_state.checked_files)
-    if app_state.current_tab == 1:
-        raw = diff_untracked(checked)
-    elif app_state.current_tab == 3:
-        raw = diff_modified(checked)
-    elif app_state.current_tab == 4:
-        raw = diff_staged(checked)
-    else:
+    diff_func = DIFF_FUNCS.get(app_state.current_tab)
+    if diff_func is None:
         return
 
-    # Search for +++ b/filename (always present, identifies the file)
+    raw = diff_func(sorted(app_state.checked_files))
     target = f"+++ b/{filename}"
-    lines = raw.splitlines()
-    for i, line in enumerate(lines):
+    for i, line in enumerate(raw.splitlines()):
         if line == target:
             app_state.diff_scroll_offset = max(0, i - 1)
             break
@@ -184,15 +173,8 @@ def _(event):
     event.app.invalidate()
 
 
-# Toggle all (interactive tabs only)
-@global_keybinds.add('a')
-def _(event):
-    if not _is_interactive_tab():
-        return
-    if app_state.file_cache:
-        if app_state.checked_files == set(app_state.file_cache):
-            app_state.checked_files = set()
-        else:
-            app_state.checked_files = set(app_state.file_cache)
-        app_state.diff_scroll_offset = 0
-    event.app.invalidate()
+# --- App control ---
+
+@global_keybinds.add('q')
+def quit_app(event: KeyPressEvent) -> None:
+    event.app.exit()

@@ -1,9 +1,22 @@
 from __future__ import annotations
 
+from enum import Enum, auto
+
+
+class Tab(Enum):
+    UNTRACKED = auto()
+    UNMODIFIED = auto()
+    MODIFIED = auto()
+    STAGED = auto()
+
+    @property
+    def has_diff_view(self) -> bool:
+        return self is not Tab.UNMODIFIED
+
 
 class AppState:
     def __init__(self) -> None:
-        self.current_tab: int = 3  # 1=Untracked, 2=Unmodified, 3=Modified, 4=Staged
+        self.current_tab: Tab = Tab.MODIFIED
         self.cursor_index: int = 0
         self.checked_files: set[str] = set()
         self.file_cache: list[str] = []
@@ -12,7 +25,7 @@ class AppState:
 
     def refresh_file_list(self, file_list: list[str]) -> None:
         self.file_cache = file_list
-        self.checked_files = self.checked_files & set(file_list)
+        self.checked_files &= set(file_list)
         if self.file_cache:
             self.cursor_index = min(self.cursor_index, len(self.file_cache) - 1)
         else:

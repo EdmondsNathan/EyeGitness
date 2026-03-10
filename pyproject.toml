@@ -1,0 +1,9 @@
+[project]
+name = "eyegitness"
+version = "0.1.0"
+description = "A terminal UI for visualizing git diffs and file status"
+requires-python = ">=3.12"
+dependencies = ["prompt_toolkit>=3.0"]
+
+[project.scripts]
+eyegitness = "main:main"

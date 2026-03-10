@@ -1,9 +1,13 @@
-ESC = "\033"
-RED = ESC + "[31m"
-GREEN = ESC + "[32m"
-RESET = ESC + "[0m"
-INVERT = ESC + "[7m"
-CYAN = ESC + "[36m"
-DIM = ESC + "[2m"
-BOLD = ESC + "[1m"
-YELLOW = ESC + "[33m"
+"""ANSI escape code constants for terminal styling."""
+
+_ESC = "\033["
+
+RESET = f"{_ESC}0m"
+BOLD = f"{_ESC}1m"
+DIM = f"{_ESC}2m"
+INVERT = f"{_ESC}7m"
+
+RED = f"{_ESC}31m"
+GREEN = f"{_ESC}32m"
+YELLOW = f"{_ESC}33m"
+CYAN = f"{_ESC}36m"

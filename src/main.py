@@ -1,13 +1,15 @@
+"""eyegitness — a terminal UI for visualizing git diffs and file status."""
+
 from prompt_toolkit import Application
 
-from keybinds import global_keybinds
+from keybinds.global_keybinds import global_keybinds
 from views.layout import build_layout
 
 
-def main():
+def main() -> None:
     app = Application(
         layout=build_layout(),
-        key_bindings=global_keybinds.global_keybinds,
+        key_bindings=global_keybinds,
         full_screen=True,
         refresh_interval=0.5,
     )

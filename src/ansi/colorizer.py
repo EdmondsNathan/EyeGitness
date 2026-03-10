@@ -1,20 +1,25 @@
+"""Utilities for handling and colorizing ANSI-escaped text."""
+
+from __future__ import annotations
+
 from ansi.codes import INVERT, RESET, GREEN, RED, CYAN, DIM
+
+_ESCAPE_CHAR = '\033'
 
 
 def ansi_hslice(line: str, offset: int) -> str:
-    """Slice a string with ANSI codes, skipping `offset` visible characters."""
+    """Slice a string with ANSI codes, skipping ``offset`` visible characters."""
     if offset <= 0:
         return line
-    result = []
+
+    result: list[str] = []
     visible = 0
     i = 0
     while i < len(line):
-        if line[i] == '\033':
-            j = i + 1
-            while j < len(line) and line[j] != 'm':
-                j += 1
-            result.append(line[i:j + 1])
-            i = j + 1
+        if line[i] == _ESCAPE_CHAR:
+            end = line.index('m', i)
+            result.append(line[i:end + 1])
+            i = end + 1
         else:
             if visible >= offset:
                 result.append(line[i])
@@ -24,11 +29,11 @@ def ansi_hslice(line: str, offset: int) -> str:
 
 
 def ansi_visible_len(line: str) -> int:
-    """Count visible characters, ignoring ANSI escape sequences."""
+    """Return the number of visible characters, ignoring ANSI escape sequences."""
     length = 0
     i = 0
     while i < len(line):
-        if line[i] == '\033':
+        if line[i] == _ESCAPE_CHAR:
             while i < len(line) and line[i] != 'm':
                 i += 1
             i += 1
@@ -38,20 +43,23 @@ def ansi_visible_len(line: str) -> int:
     return length
 
 
-def diff_colorize(diff: str) -> str:
-    result = ""
-    for line in diff.splitlines():
-        if line.startswith("@@"):
-            result += CYAN
-        elif line.startswith("+++") or line.startswith("---"):
-            result += INVERT
-        elif line.startswith("+"):
-            result += GREEN
-        elif line.startswith("-"):
-            result += RED
-        else:
-            result += DIM
+_DIFF_PREFIX_COLORS = {
+    "@@": CYAN,
+    "+++": INVERT,
+    "---": INVERT,
+    "+": GREEN,
+    "-": RED,
+}
 
-        result += f"{line}{RESET}\n"
 
-    return result
+def diff_colorize(diff_text: str) -> str:
+    """Apply ANSI colors to unified-diff output."""
+    lines: list[str] = []
+    for line in diff_text.splitlines():
+        color = DIM
+        for prefix, prefix_color in _DIFF_PREFIX_COLORS.items():
+            if line.startswith(prefix):
+                color = prefix_color
+                break
+        lines.append(f"{color}{line}{RESET}")
+    return "\n".join(lines)
