@@ -182,19 +182,30 @@ STAGE_ACTION = {
 }
 
 
+def _target_files() -> list[str]:
+    """Return checked files, or the highlighted file if none are checked."""
+    if app_state.checked_files:
+        return sorted(app_state.checked_files)
+    if app_state.file_cache:
+        return [app_state.file_cache[app_state.cursor_index]]
+    return []
+
+
 @global_keybinds.add('s')
 def stage_checked(event: KeyPressEvent) -> None:
     action = STAGE_ACTION.get(app_state.current_tab)
-    if action and app_state.checked_files:
-        action(sorted(app_state.checked_files))
+    targets = _target_files()
+    if action and targets:
+        action(targets)
         app_state.reset_for_tab()
         event.app.invalidate()
 
 
 @global_keybinds.add('S')
 def unstage_checked(event: KeyPressEvent) -> None:
-    if app_state.current_tab is Tab.STAGED and app_state.checked_files:
-        unstage_files(sorted(app_state.checked_files))
+    targets = _target_files()
+    if app_state.current_tab is Tab.STAGED and targets:
+        unstage_files(targets)
         app_state.reset_for_tab()
         event.app.invalidate()
 
