@@ -65,7 +65,11 @@ def render_status_row2() -> str:
         right = "  ".join(right_parts)
     elif not app_state.current_tab.has_diff_view:
         left = " 1-5:tabs  q:quit"
-        right = ""
+        right_parts: list[str] = []
+        if app_state.diff_scroll_offset > 0:
+            right_parts.append(f"Line {app_state.diff_scroll_offset}")
+        right_parts.append("J/K:scroll  g/G:top/bottom  d/u:jump")
+        right = "  ".join(right_parts)
     else:
         if app_state.current_tab is Tab.STAGED:
             stage_hints = "s:commit  S:unstage"

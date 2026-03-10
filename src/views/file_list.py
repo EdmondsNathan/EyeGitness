@@ -12,11 +12,17 @@ def refresh_files() -> None:
 
 
 def render_simple_content() -> str:
-    """Single-pane file list for the unmodified tab."""
+    """Single-pane file list for the unmodified tab with vertical scrolling."""
     refresh_files()
     if not app_state.file_cache:
         return " (no files)\n"
-    return "\n".join(app_state.file_cache) + "\n"
+
+    lines = app_state.file_cache
+    max_vscroll = max(0, len(lines) - 1)
+    app_state.diff_scroll_offset = min(app_state.diff_scroll_offset, max_vscroll)
+
+    visible = lines[app_state.diff_scroll_offset:]
+    return "\n".join(visible) + "\n"
 
 
 def render_file_list() -> str:

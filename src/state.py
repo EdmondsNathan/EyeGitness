@@ -16,7 +16,7 @@ class Tab(Enum):
 
     @property
     def has_scroll_view(self) -> bool:
-        return self.has_diff_view or self is Tab.LOG
+        return True
 
 
 class AppState:
