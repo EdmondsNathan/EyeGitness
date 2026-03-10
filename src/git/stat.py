@@ -55,6 +55,10 @@ def unstage_files(files: list[str]) -> None:
     _run_git("reset", "HEAD", "--", *files)
 
 
+def commit(message: str) -> subprocess.CompletedProcess[str]:
+    return _run_git("commit", "-m", message)
+
+
 def list_unmodified() -> list[str]:
     all_tracked = set(_list_files("ls-files"))
     changed = set(list_modified()) | set(list_staged())

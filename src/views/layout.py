@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from prompt_toolkit import ANSI
-from prompt_toolkit.layout.containers import HSplit, VSplit, Window, DynamicContainer
+from prompt_toolkit.layout.containers import FloatContainer, HSplit, VSplit, Window, DynamicContainer
 from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
@@ -12,6 +12,7 @@ from views.file_list import render_simple_content, render_file_list
 from views.diff_view import render_diff
 from views.status_bar import render_status_row1, render_status_row2
 from ansi.codes import RESET, GREEN
+from views.commit_dialog import commit_float
 
 
 def _right_pane_title() -> str:
@@ -95,4 +96,9 @@ def build_layout() -> Layout:
         height=1,
     )
 
-    return Layout(HSplit([tab_bar, separator, body, status_row1, status_row2]))
+    root = FloatContainer(
+        content=HSplit([tab_bar, separator, body, status_row1, status_row2]),
+        floats=[commit_float],
+    )
+
+    return Layout(root)

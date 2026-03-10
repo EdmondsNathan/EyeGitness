@@ -1,13 +1,15 @@
 from __future__ import annotations
 
-from prompt_toolkit.key_binding import KeyBindings, KeyPressEvent
+from prompt_toolkit.key_binding import ConditionalKeyBindings, KeyBindings, KeyPressEvent
+from prompt_toolkit.filters import Condition
 
 from state import Tab, app_state
 from git.diff import diff_modified, diff_staged, diff_untracked
 from git.stat import intent_to_add, stage_files, unstage_files
+from views.commit_dialog import commit_text_area
 from views.tab_bar import TAB_BY_NUMBER
 
-global_keybinds = KeyBindings()
+_raw_keybinds = KeyBindings()
 
 DIFF_FUNCS = {
     Tab.UNTRACKED: diff_untracked,
@@ -29,7 +31,7 @@ def _requires_diff_view(handler):
 def _make_tab_handler(number: int):
     tab = TAB_BY_NUMBER[number]
 
-    @global_keybinds.add(str(number))
+    @_raw_keybinds.add(str(number))
     def switch_tab(event: KeyPressEvent) -> None:
         app_state.current_tab = tab
         app_state.reset_for_tab()
@@ -44,7 +46,7 @@ for _n in TAB_BY_NUMBER:
 
 # --- File list navigation ---
 
-@global_keybinds.add('j')
+@_raw_keybinds.add('j')
 @_requires_diff_view
 def cursor_down(event: KeyPressEvent) -> None:
     if app_state.file_cache and app_state.cursor_index < len(app_state.file_cache) - 1:
@@ -52,7 +54,7 @@ def cursor_down(event: KeyPressEvent) -> None:
     event.app.invalidate()
 
 
-@global_keybinds.add('k')
+@_raw_keybinds.add('k')
 @_requires_diff_view
 def cursor_up(event: KeyPressEvent) -> None:
     if app_state.cursor_index > 0:
@@ -62,14 +64,14 @@ def cursor_up(event: KeyPressEvent) -> None:
 
 # --- Diff vertical scroll ---
 
-@global_keybinds.add('J')
+@_raw_keybinds.add('J')
 @_requires_diff_view
 def scroll_diff_down(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset += 1
     event.app.invalidate()
 
 
-@global_keybinds.add('K')
+@_raw_keybinds.add('K')
 @_requires_diff_view
 def scroll_diff_up(event: KeyPressEvent) -> None:
     if app_state.diff_scroll_offset > 0:
@@ -77,14 +79,14 @@ def scroll_diff_up(event: KeyPressEvent) -> None:
     event.app.invalidate()
 
 
-@global_keybinds.add('g')
+@_raw_keybinds.add('g')
 @_requires_diff_view
 def scroll_diff_top(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = 0
     event.app.invalidate()
 
 
-@global_keybinds.add('G')
+@_raw_keybinds.add('G')
 @_requires_diff_view
 def scroll_diff_bottom(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = 999_999  # clamped by render_diff
@@ -95,14 +97,14 @@ def _half_page_size(event: KeyPressEvent) -> int:
     return max(1, event.app.output.get_size().rows // 2)
 
 
-@global_keybinds.add('d')
+@_raw_keybinds.add('d')
 @_requires_diff_view
 def scroll_diff_half_down(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset += _half_page_size(event)
     event.app.invalidate()
 
 
-@global_keybinds.add('u')
+@_raw_keybinds.add('u')
 @_requires_diff_view
 def scroll_diff_half_up(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = max(0, app_state.diff_scroll_offset - _half_page_size(event))
@@ -111,14 +113,14 @@ def scroll_diff_half_up(event: KeyPressEvent) -> None:
 
 # --- Diff horizontal scroll ---
 
-@global_keybinds.add('H')
+@_raw_keybinds.add('H')
 @_requires_diff_view
 def scroll_diff_left(event: KeyPressEvent) -> None:
     app_state.diff_hscroll_offset = max(0, app_state.diff_hscroll_offset - 4)
     event.app.invalidate()
 
 
-@global_keybinds.add('L')
+@_raw_keybinds.add('L')
 @_requires_diff_view
 def scroll_diff_right(event: KeyPressEvent) -> None:
     app_state.diff_hscroll_offset += 4
@@ -127,7 +129,7 @@ def scroll_diff_right(event: KeyPressEvent) -> None:
 
 # --- File selection ---
 
-@global_keybinds.add(' ')
+@_raw_keybinds.add(' ')
 @_requires_diff_view
 def toggle_file_selection(event: KeyPressEvent) -> None:
     if app_state.file_cache:
@@ -137,7 +139,7 @@ def toggle_file_selection(event: KeyPressEvent) -> None:
     event.app.invalidate()
 
 
-@global_keybinds.add('a')
+@_raw_keybinds.add('a')
 @_requires_diff_view
 def toggle_select_all(event: KeyPressEvent) -> None:
     if app_state.file_cache:
@@ -150,7 +152,7 @@ def toggle_select_all(event: KeyPressEvent) -> None:
     event.app.invalidate()
 
 
-@global_keybinds.add('enter')
+@_raw_keybinds.add('enter')
 @_requires_diff_view
 def focus_file_in_diff(event: KeyPressEvent) -> None:
     if not app_state.file_cache:
@@ -191,8 +193,14 @@ def _target_files() -> list[str]:
     return []
 
 
-@global_keybinds.add('s')
+@_raw_keybinds.add('s')
 def stage_checked(event: KeyPressEvent) -> None:
+    if app_state.current_tab is Tab.STAGED:
+        app_state.show_commit_dialog = True
+        event.app.layout.focus(commit_text_area)
+        event.app.invalidate()
+        return
+
     action = STAGE_ACTION.get(app_state.current_tab)
     targets = _target_files()
     if action and targets:
@@ -201,7 +209,7 @@ def stage_checked(event: KeyPressEvent) -> None:
         event.app.invalidate()
 
 
-@global_keybinds.add('S')
+@_raw_keybinds.add('S')
 def unstage_checked(event: KeyPressEvent) -> None:
     targets = _target_files()
     if app_state.current_tab is Tab.STAGED and targets:
@@ -212,6 +220,12 @@ def unstage_checked(event: KeyPressEvent) -> None:
 
 # --- App control ---
 
-@global_keybinds.add('q')
+@_raw_keybinds.add('q')
 def quit_app(event: KeyPressEvent) -> None:
     event.app.exit()
+
+
+global_keybinds = ConditionalKeyBindings(
+    _raw_keybinds,
+    filter=Condition(lambda: not app_state.show_commit_dialog),
+)

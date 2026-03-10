@@ -22,6 +22,7 @@ class AppState:
         self.file_cache: list[str] = []
         self.diff_scroll_offset: int = 0
         self.diff_hscroll_offset: int = 0
+        self.show_commit_dialog: bool = False
 
     def refresh_file_list(self, file_list: list[str]) -> None:
         self.file_cache = file_list
