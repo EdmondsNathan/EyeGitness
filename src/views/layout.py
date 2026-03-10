@@ -10,6 +10,7 @@ from state import Tab, app_state
 from views.tab_bar import render_tab_bar
 from views.file_list import render_simple_content, render_file_list
 from views.diff_view import render_diff
+from views.log_view import render_log
 from views.status_bar import render_status_row1, render_status_row2
 from ansi.codes import RESET, GREEN
 from views.commit_dialog import commit_float
@@ -71,7 +72,25 @@ def _build_split_body() -> VSplit:
     ])
 
 
+def _build_log_body() -> HSplit:
+    """Single pane for the log tab."""
+    title = Window(
+        content=FormattedTextControl(
+            lambda: ANSI(f"{GREEN} Commit Log{RESET}"), show_cursor=False
+        ),
+        height=1,
+    )
+    return HSplit([
+        title,
+        Window(content=FormattedTextControl(
+            lambda: ANSI(render_log()), show_cursor=False
+        )),
+    ])
+
+
 def _dynamic_body() -> HSplit | VSplit:
+    if app_state.current_tab is Tab.LOG:
+        return _build_log_body()
     if app_state.current_tab.has_diff_view:
         return _build_split_body()
     return _build_simple_body()

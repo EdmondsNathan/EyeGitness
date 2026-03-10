@@ -26,7 +26,9 @@ def render_status_row1() -> str:
     pos = app_state.cursor_index + 1 if total > 0 else 0
 
     left_parts = [f"{BOLD}[{branch}]{RESET}"]
-    if app_state.current_tab.has_diff_view:
+    if app_state.current_tab is Tab.LOG:
+        pass
+    elif app_state.current_tab.has_diff_view:
         left_parts.append(f"  {pos}/{total}")
         n_checked = len(app_state.checked_files)
         if n_checked > 0:
@@ -54,8 +56,15 @@ def render_status_row1() -> str:
 
 
 def render_status_row2() -> str:
-    if not app_state.current_tab.has_diff_view:
-        left = " 1-4:tabs  q:quit"
+    if app_state.current_tab is Tab.LOG:
+        left = " 1-5:tabs  q:quit"
+        right_parts: list[str] = []
+        if app_state.diff_scroll_offset > 0:
+            right_parts.append(f"Line {app_state.diff_scroll_offset}")
+        right_parts.append("J/K:scroll  g/G:top/bottom  d/u:jump")
+        right = "  ".join(right_parts)
+    elif not app_state.current_tab.has_diff_view:
+        left = " 1-5:tabs  q:quit"
         right = ""
     else:
         if app_state.current_tab is Tab.STAGED:

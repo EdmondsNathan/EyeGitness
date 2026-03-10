@@ -59,6 +59,10 @@ def commit(message: str) -> subprocess.CompletedProcess[str]:
     return _run_git("commit", "-m", message)
 
 
+def get_log() -> str:
+    return _run_git("log", "--oneline", "--decorate", "--graph", "-200").stdout
+
+
 def list_unmodified() -> list[str]:
     all_tracked = set(_list_files("ls-files"))
     changed = set(list_modified()) | set(list_staged())

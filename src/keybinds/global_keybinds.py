@@ -26,6 +26,14 @@ def _requires_diff_view(handler):
     return wrapper
 
 
+def _requires_scroll_view(handler):
+    """Decorator that skips the handler when the active tab has no scrollable view."""
+    def wrapper(event: KeyPressEvent) -> None:
+        if app_state.current_tab.has_scroll_view:
+            handler(event)
+    return wrapper
+
+
 # --- Tab switching ---
 
 def _make_tab_handler(number: int):
@@ -65,14 +73,14 @@ def cursor_up(event: KeyPressEvent) -> None:
 # --- Diff vertical scroll ---
 
 @_raw_keybinds.add('J')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_down(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset += 1
     event.app.invalidate()
 
 
 @_raw_keybinds.add('K')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_up(event: KeyPressEvent) -> None:
     if app_state.diff_scroll_offset > 0:
         app_state.diff_scroll_offset -= 1
@@ -80,14 +88,14 @@ def scroll_diff_up(event: KeyPressEvent) -> None:
 
 
 @_raw_keybinds.add('g')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_top(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = 0
     event.app.invalidate()
 
 
 @_raw_keybinds.add('G')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_bottom(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = 999_999  # clamped by render_diff
     event.app.invalidate()
@@ -98,14 +106,14 @@ def _half_page_size(event: KeyPressEvent) -> int:
 
 
 @_raw_keybinds.add('d')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_half_down(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset += _half_page_size(event)
     event.app.invalidate()
 
 
 @_raw_keybinds.add('u')
-@_requires_diff_view
+@_requires_scroll_view
 def scroll_diff_half_up(event: KeyPressEvent) -> None:
     app_state.diff_scroll_offset = max(0, app_state.diff_scroll_offset - _half_page_size(event))
     event.app.invalidate()

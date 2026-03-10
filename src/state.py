@@ -8,10 +8,15 @@ class Tab(Enum):
     UNMODIFIED = auto()
     MODIFIED = auto()
     STAGED = auto()
+    LOG = auto()
 
     @property
     def has_diff_view(self) -> bool:
-        return self is not Tab.UNMODIFIED
+        return self not in (Tab.UNMODIFIED, Tab.LOG)
+
+    @property
+    def has_scroll_view(self) -> bool:
+        return self.has_diff_view or self is Tab.LOG
 
 
 class AppState:
