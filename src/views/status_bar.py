@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 
-from state import app_state
+from state import Tab, app_state
 from git.stat import get_branch, get_head_short, get_ahead_behind
 from ansi.colorizer import ansi_visible_len
 from ansi.codes import INVERT, RESET, DIM, BOLD, YELLOW
@@ -58,7 +58,16 @@ def render_status_row2() -> str:
         left = " 1-4:tabs  q:quit"
         right = ""
     else:
-        left = " j/k:navigate  Space:select  a:all  Enter:focus  q:quit"
+        if app_state.current_tab is Tab.STAGED:
+            stage_hints = "s:commit  S:unstage"
+        elif app_state.current_tab is Tab.MODIFIED:
+            stage_hints = "s:stage"
+        elif app_state.current_tab is Tab.UNTRACKED:
+            stage_hints = "s:track"
+        else:
+            stage_hints = ""
+        stage_part = f"  {stage_hints}" if stage_hints else ""
+        left = f" j/k:navigate  Space:select  a:all  Enter:focus{stage_part}  q:quit"
         right_parts: list[str] = []
         if app_state.diff_scroll_offset > 0:
             right_parts.append(f"Line {app_state.diff_scroll_offset}")
