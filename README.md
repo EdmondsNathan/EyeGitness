@@ -138,4 +138,4 @@ Views are functional: each render cycle recomputes the display from current stat
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[CC0 1.0 Universal](Licenses/LICENSE.txt)
