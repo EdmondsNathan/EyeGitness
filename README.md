@@ -33,25 +33,21 @@ The tool targets developers who prefer the terminal but want faster feedback loo
 
 Requires Python 3.12+ and Git.
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/eyegitness.git
-cd eyegitness
+### Install from GitHub
 
-# Create a virtual environment and install
-python -m venv .venv
-source .venv/bin/activate
+```bash
+pip install git+https://github.com/EdmondsNathan/eyegitness.git
+```
+
+### Install from a local clone
+
+```bash
+git clone https://github.com/EdmondsNathan/eyegitness.git
+cd eyegitness
 pip install .
 ```
 
 After installation, the `eyegitness` command is available on your `PATH`.
-
-Alternatively, run directly from source:
-
-```bash
-pip install prompt_toolkit
-python src/main.py
-```
 
 ## Usage
 
