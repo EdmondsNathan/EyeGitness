@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from state import Tab, app_state
-from git.diff import diff_modified, diff_staged, diff_untracked
-from ansi.colorizer import diff_colorize, ansi_hslice, ansi_visible_len
+from eyegitness.state import Tab, app_state
+from eyegitness.git.diff import diff_modified, diff_staged, diff_untracked
+from eyegitness.ansi.colorizer import diff_colorize, ansi_hslice, ansi_visible_len
 
 DIFF_FUNCS = {
     Tab.UNTRACKED: diff_untracked,

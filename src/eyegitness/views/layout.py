@@ -6,14 +6,14 @@ from prompt_toolkit.layout.dimension import D
 from prompt_toolkit.layout.controls import FormattedTextControl
 from prompt_toolkit.layout.layout import Layout
 
-from state import Tab, app_state
-from views.tab_bar import render_tab_bar
-from views.file_list import render_simple_content, render_file_list
-from views.diff_view import render_diff
-from views.log_view import render_log
-from views.status_bar import render_status_row1, render_status_row2
-from ansi.codes import RESET, GREEN
-from views.commit_dialog import commit_float
+from eyegitness.state import Tab, app_state
+from eyegitness.views.tab_bar import render_tab_bar
+from eyegitness.views.file_list import render_simple_content, render_file_list
+from eyegitness.views.diff_view import render_diff
+from eyegitness.views.log_view import render_log
+from eyegitness.views.status_bar import render_status_row1, render_status_row2
+from eyegitness.ansi.codes import RESET, GREEN
+from eyegitness.views.commit_dialog import commit_float
 
 
 def _right_pane_title() -> str:

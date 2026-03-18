@@ -6,4 +6,11 @@ requires-python = ">=3.12"
 dependencies = ["prompt_toolkit>=3.0"]
 
 [project.scripts]
-eyegitness = "main:main"
+eyegitness = "eyegitness.main:main"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

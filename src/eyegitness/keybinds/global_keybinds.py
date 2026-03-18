@@ -3,11 +3,11 @@ from __future__ import annotations
 from prompt_toolkit.key_binding import ConditionalKeyBindings, KeyBindings, KeyPressEvent
 from prompt_toolkit.filters import Condition
 
-from state import Tab, app_state
-from git.diff import diff_modified, diff_staged, diff_untracked
-from git.stat import intent_to_add, stage_files, unstage_files
-from views.commit_dialog import commit_text_area
-from views.tab_bar import TAB_BY_NUMBER
+from eyegitness.state import Tab, app_state
+from eyegitness.git.diff import diff_modified, diff_staged, diff_untracked
+from eyegitness.git.stat import intent_to_add, stage_files, unstage_files
+from eyegitness.views.commit_dialog import commit_text_area
+from eyegitness.views.tab_bar import TAB_BY_NUMBER
 
 _raw_keybinds = KeyBindings()
 

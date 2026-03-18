@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from state import app_state
-from views.tab_bar import LIST_FUNC_BY_TAB
-from ansi.codes import INVERT, RESET
+from eyegitness.state import app_state
+from eyegitness.views.tab_bar import LIST_FUNC_BY_TAB
+from eyegitness.ansi.codes import INVERT, RESET
 
 
 def refresh_files() -> None:

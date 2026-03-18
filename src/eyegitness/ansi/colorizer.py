@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from ansi.codes import INVERT, RESET, GREEN, RED, CYAN, DIM
+from eyegitness.ansi.codes import INVERT, RESET, GREEN, RED, CYAN, DIM
 
 _ESCAPE_CHAR = '\033'
 

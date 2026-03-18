@@ -2,8 +2,8 @@
 
 from prompt_toolkit import Application
 
-from keybinds.global_keybinds import global_keybinds
-from views.layout import build_layout
+from eyegitness.keybinds.global_keybinds import global_keybinds
+from eyegitness.views.layout import build_layout
 
 
 def main() -> None:

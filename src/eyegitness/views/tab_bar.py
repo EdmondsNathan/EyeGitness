@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from collections.abc import Callable
 
-from state import Tab, app_state
-from git.stat import list_modified, list_staged, list_untracked, list_unmodified
-from ansi.codes import INVERT, RESET
+from eyegitness.state import Tab, app_state
+from eyegitness.git.stat import list_modified, list_staged, list_untracked, list_unmodified
+from eyegitness.ansi.codes import INVERT, RESET
 
 TAB_CONFIG: list[tuple[Tab, str, Callable[[], list[str]]]] = [
     (Tab.UNTRACKED, "[1] Untracked", list_untracked),

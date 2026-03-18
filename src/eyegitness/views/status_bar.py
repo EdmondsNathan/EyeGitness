@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import os
 
-from state import Tab, app_state
-from git.stat import get_branch, get_head_short, get_ahead_behind
-from ansi.colorizer import ansi_visible_len
-from ansi.codes import INVERT, RESET, DIM, BOLD, YELLOW
+from eyegitness.state import Tab, app_state
+from eyegitness.git.stat import get_branch, get_head_short, get_ahead_behind
+from eyegitness.ansi.colorizer import ansi_visible_len
+from eyegitness.ansi.codes import INVERT, RESET, DIM, BOLD, YELLOW
 
 
 def _pad_right(left: str, right: str) -> str:

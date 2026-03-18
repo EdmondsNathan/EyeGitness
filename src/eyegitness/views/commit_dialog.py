@@ -5,8 +5,8 @@ from prompt_toolkit.layout.containers import ConditionalContainer, Float
 from prompt_toolkit.filters import Condition
 from prompt_toolkit.widgets import Frame, TextArea
 
-from state import app_state
-from git.stat import commit
+from eyegitness.state import app_state
+from eyegitness.git.stat import commit
 
 
 commit_text_area = TextArea(

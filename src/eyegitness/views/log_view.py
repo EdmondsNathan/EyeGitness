@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 
-from state import app_state
-from git.stat import get_log
-from ansi.codes import RESET, YELLOW, BOLD, DIM, CYAN, RED
+from eyegitness.state import app_state
+from eyegitness.git.stat import get_log
+from eyegitness.ansi.codes import RESET, YELLOW, BOLD, DIM, CYAN, RED
 
 
 _HASH_RE = re.compile(r"^([*|/\\ ]+)([0-9a-f]{7,})\b")
