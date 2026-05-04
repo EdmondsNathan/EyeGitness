@@ -1,3 +1,16 @@
+"""Main layout builder for the eyegitness TUI.
+
+Assembles the full-screen layout from prompt_toolkit containers:
+- Tab bar (top)
+- Separator line
+- Dynamic body (switches between single-pane, split-pane, or log view)
+- Two status bar rows (bottom)
+- Floating commit dialog overlay
+
+The body is wrapped in DynamicContainer so it rebuilds each render cycle
+based on the active tab, avoiding stale widget references.
+"""
+
 from __future__ import annotations
 
 from prompt_toolkit import ANSI
@@ -17,12 +30,13 @@ from eyegitness.views.commit_dialog import commit_float
 
 
 def _right_pane_title() -> str:
+    """Return the title for the right pane (\"Contents\" for untracked, \"Diff\" otherwise)."""
     label = "Contents" if app_state.current_tab == Tab.UNTRACKED else "Diff"
     return f" {label}"
 
 
 def _build_simple_body() -> HSplit:
-    """Single pane for the unmodified tab."""
+    """Single pane for the unmodified tab — plain file list, no diff."""
     title = Window(
         content=FormattedTextControl(
             lambda: ANSI(f"{GREEN}> Files{RESET}"), show_cursor=False
@@ -38,7 +52,11 @@ def _build_simple_body() -> HSplit:
 
 
 def _build_split_body() -> VSplit:
-    """Two-pane layout: file list on the left, diff on the right."""
+    """Two-pane layout: file list on the left, diff on the right.
+
+    Used for Untracked, Modified, and Staged tabs. Panes are equally
+    weighted and separated by a vertical pipe character.
+    """
     left_title = Window(
         content=FormattedTextControl(
             lambda: ANSI(f"{GREEN} Files{RESET}"), show_cursor=False
@@ -67,13 +85,13 @@ def _build_split_body() -> VSplit:
 
     return VSplit([
         left_pane,
-        Window(width=1, char='|'),
+        Window(width=1, char='|'),  # Vertical separator
         right_pane,
     ])
 
 
 def _build_log_body() -> HSplit:
-    """Single pane for the log tab."""
+    """Single pane for the log tab — decorated commit graph."""
     title = Window(
         content=FormattedTextControl(
             lambda: ANSI(f"{GREEN} Commit Log{RESET}"), show_cursor=False
@@ -89,6 +107,7 @@ def _build_log_body() -> HSplit:
 
 
 def _dynamic_body() -> HSplit | VSplit:
+    """Select the appropriate body layout based on the active tab."""
     if app_state.current_tab is Tab.LOG:
         return _build_log_body()
     if app_state.current_tab.has_diff_view:
@@ -97,6 +116,16 @@ def _dynamic_body() -> HSplit | VSplit:
 
 
 def build_layout() -> Layout:
+    """Construct the full application layout.
+
+    Structure (top to bottom):
+    - Tab bar: numbered tabs with file counts
+    - Separator: horizontal line
+    - Body: dynamic content area (changes per tab)
+    - Status row 1: branch, position, upstream info
+    - Status row 2: keybinding hints
+    - Float: commit dialog overlay (hidden until 's' pressed on Staged tab)
+    """
     tab_bar = Window(
         content=FormattedTextControl(lambda: ANSI(render_tab_bar()), show_cursor=False),
         height=1,
@@ -115,6 +144,8 @@ def build_layout() -> Layout:
         height=1,
     )
 
+    # FloatContainer wraps the main content and provides an overlay layer
+    # for the commit dialog
     root = FloatContainer(
         content=HSplit([tab_bar, separator, body, status_row1, status_row2]),
         floats=[commit_float],

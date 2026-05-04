@@ -1,3 +1,11 @@
+"""Status bar rendering (bottom two rows of the TUI).
+
+Row 1: Branch name, cursor position, selection count, ahead/behind counts, HEAD info.
+Row 2: Context-sensitive keybinding hints for the active tab.
+
+Both rows use inverted dim styling and are padded to fill the terminal width.
+"""
+
 from __future__ import annotations
 
 import os
@@ -13,7 +21,7 @@ def _pad_right(left: str, right: str) -> str:
     try:
         width = os.get_terminal_size().columns
     except OSError:
-        width = 80
+        width = 80  # Fallback if terminal size can't be detected
     left_len = ansi_visible_len(left)
     right_len = ansi_visible_len(right)
     gap = max(1, width - left_len - right_len)
@@ -21,31 +29,36 @@ def _pad_right(left: str, right: str) -> str:
 
 
 def render_status_row1() -> str:
+    """Render the top status row: branch, position, selections, upstream info."""
     branch = get_branch() or "detached"
     total = len(app_state.file_cache)
     pos = app_state.cursor_index + 1 if total > 0 else 0
 
+    # Left side: branch name + context-dependent position info
     left_parts = [f"{BOLD}[{branch}]{RESET}"]
     if app_state.current_tab is Tab.LOG:
-        pass
+        pass  # Log tab shows no file position info
     elif app_state.current_tab.has_diff_view:
+        # Show cursor position and selection count
         left_parts.append(f"  {pos}/{total}")
         n_checked = len(app_state.checked_files)
         if n_checked > 0:
             left_parts.append(f"  {YELLOW}{n_checked} selected{RESET}")
     else:
+        # Unmodified tab: just show total file count
         left_parts.append(f"  {total} files")
 
     left = "".join(left_parts)
 
+    # Right side: ahead/behind counts + latest commit summary
     right_parts: list[str] = []
     ahead, behind = get_ahead_behind()
     if ahead or behind:
         ab: list[str] = []
         if ahead:
-            ab.append(f"+{ahead}")
+            ab.append(f"+{ahead}")   # Commits ahead of upstream
         if behind:
-            ab.append(f"-{behind}")
+            ab.append(f"-{behind}")  # Commits behind upstream
         right_parts.append("".join(ab))
     head = get_head_short()
     if head:
@@ -56,7 +69,9 @@ def render_status_row1() -> str:
 
 
 def render_status_row2() -> str:
+    """Render the bottom status row: context-sensitive keybinding hints."""
     if app_state.current_tab is Tab.LOG:
+        # Log tab: only scroll bindings
         left = " 1-5:tabs  q:quit"
         right_parts: list[str] = []
         if app_state.diff_scroll_offset > 0:
@@ -64,6 +79,7 @@ def render_status_row2() -> str:
         right_parts.append("J/K:scroll  g/G:top/bottom  d/u:jump")
         right = "  ".join(right_parts)
     elif not app_state.current_tab.has_diff_view:
+        # Unmodified tab: same as log (scroll only, no file actions)
         left = " 1-5:tabs  q:quit"
         right_parts: list[str] = []
         if app_state.diff_scroll_offset > 0:
@@ -71,6 +87,7 @@ def render_status_row2() -> str:
         right_parts.append("J/K:scroll  g/G:top/bottom  d/u:jump")
         right = "  ".join(right_parts)
     else:
+        # Diff tabs: show file navigation + tab-specific staging hints
         if app_state.current_tab is Tab.STAGED:
             stage_hints = "s:commit  S:unstage"
         elif app_state.current_tab is Tab.MODIFIED:
