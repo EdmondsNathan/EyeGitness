@@ -1,1 +1,2 @@
-pub(super) mod diff;
+mod diff;
+pub(super) use diff::diff;
