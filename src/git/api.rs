@@ -1,4 +1,4 @@
-use crate::git::{GitError, runner};
+use crate::git::{runner, GitError};
 
 pub(crate) fn diff() -> Result<String, GitError> {
     runner::run_git(&["diff", "--no-color"])
@@ -15,4 +15,11 @@ pub(crate) fn untracked_files() -> Result<Vec<String>, GitError> {
             .map(String::from)
             .collect(),
     )
+}
+
+pub(crate) fn modified_files() -> Result<Vec<String>, GitError> {
+    Ok(runner::run_git(&["diff", "--name-only", "-z"])?
+        .split('\0')
+        .map(String::from)
+        .collect())
 }
