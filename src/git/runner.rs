@@ -8,7 +8,7 @@ impl From<std::io::Error> for GitError {
     }
 }
 
-fn run_git(args: &[&str]) -> Result<Vec<u8>, GitError> {
+pub(super) fn run_git(args: &[&str]) -> Result<String, GitError> {
     let output = Command::new("git").args(args).output()?;
 
     if !output.status.success() {
@@ -17,5 +17,5 @@ fn run_git(args: &[&str]) -> Result<Vec<u8>, GitError> {
         ));
     }
 
-    Ok(output.stdout)
+    Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
