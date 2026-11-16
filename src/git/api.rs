@@ -1,25 +1,26 @@
-use crate::git::{runner, GitError};
+use crate::git::{parse, runner, FileStatus, GitError, GitFile};
 
 pub(crate) fn diff() -> Result<String, GitError> {
     runner::run_git(&["diff", "--no-color"])
 }
 
-pub(crate) fn diff_file(file_name: &str) -> Result<String, GitError> {
-    runner::run_git(&["diff", "--no-color", "--", file_name])
+pub(crate) enum DiffMode {
+    Staged,
+    Unstaged,
 }
 
-pub(crate) fn untracked_files() -> Result<Vec<String>, GitError> {
-    Ok(
-        runner::run_git(&["ls-files", "-z", "--others", "--exclude-standard"])?
-            .split('\0')
-            .map(String::from)
-            .collect(),
-    )
+pub(crate) fn diff_file(file: GitFile, mode: DiffMode) -> Result<String, GitError> {
+    let mut args = vec!["diff", "--no-color"];
+
+    if let DiffMode::Staged = mode {
+        args.push("--cached");
+    }
+
+    args.extend(["--", &file.path]);
+
+    runner::run_git(&args)
 }
 
-pub(crate) fn modified_files() -> Result<Vec<String>, GitError> {
-    Ok(runner::run_git(&["diff", "--name-only", "-z"])?
-        .split('\0')
-        .map(String::from)
-        .collect())
+pub(crate) fn status() -> Result<Vec<GitFile>, GitError> {
+    parse::status(&runner::run_git(&["status", "--porcelain", "-z"])?)
 }
