@@ -1,6 +1,7 @@
 pub(crate) enum GitError {
     Io(std::io::Error),
     Git(String),
+    Parse(String),
 }
 
 impl std::fmt::Display for GitError {
@@ -8,6 +9,7 @@ impl std::fmt::Display for GitError {
         match self {
             GitError::Io(error) => write!(f, "{}", error),
             GitError::Git(error) => write!(f, "{}", error),
+            GitError::Parse(error) => write!(f, "{}", error),
         }
     }
 }
