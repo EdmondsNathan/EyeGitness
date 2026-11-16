@@ -1,4 +1,4 @@
-use crate::git::{ConflictKind, FileState, FileStatus, GitError, GitFile};
+use crate::app::git::{ConflictKind, FileState, FileStatus, GitError, GitFile};
 
 pub(super) fn status(output: &str) -> Result<Vec<GitFile>, GitError> {
     let mut files: Vec<GitFile> = Vec::new();

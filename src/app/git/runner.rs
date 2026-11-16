@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use crate::git::GitError;
+use crate::app::git::GitError;
 
 impl From<std::io::Error> for GitError {
     fn from(error: std::io::Error) -> Self {

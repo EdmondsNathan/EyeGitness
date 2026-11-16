@@ -1,4 +1,4 @@
-use crate::git::{parse, runner, FileStatus, GitError, GitFile};
+use crate::app::git::{parse, runner, FileStatus, GitError, GitFile};
 
 pub(crate) fn diff() -> Result<String, GitError> {
     runner::run_git(&["diff", "--no-color"])

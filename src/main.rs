@@ -1,3 +1,3 @@
-mod git;
+mod app;
 
 fn main() {}
