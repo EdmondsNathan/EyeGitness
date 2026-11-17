@@ -1,5 +1,6 @@
 pub(crate) struct GitFile {
     pub(crate) path: String,
+    pub(crate) orig_path: Option<String>,
     pub(crate) state: FileState,
 }
 
