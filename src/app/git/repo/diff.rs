@@ -15,6 +15,8 @@ pub(crate) enum DiffMode {
 impl Repo {
     // TODO Implement a Diff type to allow better parsing of Diffs
     pub(crate) fn diff(&self, file: GitFile, mode: DiffMode) -> Result<Option<Diff>, GitError> {
+        // TODO check that file can be diffed(not untracked or other edge cases)
+
         let mut args = vec!["diff", "--no-color"];
 
         if let DiffMode::Staged = mode {
