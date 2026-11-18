@@ -20,6 +20,9 @@ impl Repo {
 
 #[cfg(test)]
 pub(super) mod test_utils {
+    use std::fs;
+    use tempfile::TempDir;
+
     use super::*;
     use std::process::Command;
 
@@ -39,6 +42,20 @@ pub(super) mod test_utils {
             "git {args:?} failed: {}",
             String::from_utf8_lossy(&out.stderr)
         );
+    }
+
+    /// A fresh repo with a local identity and one commit, so HEAD exists.
+    pub(crate) fn init_repo() -> TempDir {
+        let dir = tempfile::tempdir().unwrap();
+        let p = dir.path();
+        git(p, &["init", "-q"]);
+        git(p, &["config", "user.name", "Test"]);
+        git(p, &["config", "user.email", "test@example.com"]);
+        git(p, &["config", "commit.gpgsign", "false"]);
+        fs::write(p.join("README.md"), "hello\n").unwrap();
+        git(p, &["add", "."]);
+        git(p, &["commit", "-q", "-m", "init"]);
+        dir
     }
 }
 
