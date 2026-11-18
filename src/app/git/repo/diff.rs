@@ -1,7 +1,11 @@
 use crate::app::{
-    git::{runner, GitError, Repo},
+    git::{parse, runner, GitError, Repo},
     GitFile,
 };
+
+pub(crate) struct Diff {
+    // TODO
+}
 
 pub(crate) enum DiffMode {
     Staged,
@@ -9,12 +13,8 @@ pub(crate) enum DiffMode {
 }
 
 impl Repo {
-    pub(crate) fn diff(&self) -> Result<String, GitError> {
-        runner::run_git(&self.path, &["diff", "--no-color"])
-    }
-
     // TODO Implement a Diff type to allow better parsing of Diffs
-    pub(crate) fn diff_file(&self, file: GitFile, mode: DiffMode) -> Result<String, GitError> {
+    pub(crate) fn diff(&self, file: GitFile, mode: DiffMode) -> Result<Option<Diff>, GitError> {
         let mut args = vec!["diff", "--no-color"];
 
         if let DiffMode::Staged = mode {
@@ -23,6 +23,8 @@ impl Repo {
 
         args.extend(["--", &file.path]);
 
-        runner::run_git(&self.path, &args)
+        parse::diff(&runner::run_git(&self.path, &args)?)
     }
 }
+
+// TODO tests

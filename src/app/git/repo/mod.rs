@@ -1,7 +1,7 @@
 use crate::app::git::{runner, GitError};
 use std::path::{Path, PathBuf};
 
-pub(crate) use diff::DiffMode;
+pub(crate) use diff::{Diff, DiffMode};
 
 mod diff;
 mod status;
