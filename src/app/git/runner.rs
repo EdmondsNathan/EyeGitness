@@ -21,25 +21,8 @@ pub(super) fn run_git(repo_path: &Path, args: &[&str]) -> Result<String, GitErro
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::app::git::repo::test_utils::git;
     use std::fs;
-
-    /// Run a setup command in `dir` with the user's config isolated.
-    fn git(dir: &Path, args: &[&str]) {
-        let out = Command::new("git")
-            .arg("-C")
-            .arg(dir)
-            .args(args)
-            .env("GIT_CONFIG_GLOBAL", "/dev/null")
-            .env("GIT_CONFIG_NOSYSTEM", "1")
-            .env("GIT_TERMINAL_PROMPT", "0")
-            .output()
-            .expect("failed to launch git");
-        assert!(
-            out.status.success(),
-            "git {args:?} failed: {}",
-            String::from_utf8_lossy(&out.stderr)
-        );
-    }
 
     #[test]
     fn returns_stdout_on_success() {
