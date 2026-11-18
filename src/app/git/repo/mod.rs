@@ -1,4 +1,4 @@
-use crate::app::git::{runner, GitError};
+use crate::app::git::{GitError, runner};
 use std::path::{Path, PathBuf};
 
 pub(crate) use diff::{Diff, DiffMode};

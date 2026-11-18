@@ -1,6 +1,6 @@
 use crate::app::{
-    git::{parse, runner, GitError, Repo},
     GitFile,
+    git::{GitError, Repo, parse, runner},
 };
 
 pub(crate) struct Diff {
