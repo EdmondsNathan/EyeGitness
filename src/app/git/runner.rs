@@ -17,3 +17,5 @@ pub(super) fn run_git(repo_path: &Path, args: &[&str]) -> Result<String, GitErro
 
     Ok(String::from_utf8_lossy(&output.stdout).into_owned())
 }
+
+// TODO tests
