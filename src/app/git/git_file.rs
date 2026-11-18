@@ -1,9 +1,11 @@
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) struct GitFile {
     pub(crate) path: String,
     pub(crate) orig_path: Option<String>,
     pub(crate) state: FileState,
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum FileState {
     Normal {
         index: Option<FileStatus>,
@@ -13,6 +15,7 @@ pub(crate) enum FileState {
     Conflicted(ConflictKind),
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum FileStatus {
     Modified,    // M
     TypeChanged, // T
@@ -22,6 +25,7 @@ pub(crate) enum FileStatus {
     Copied,      // C
 }
 
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum ConflictKind {
     BothDeleted,   // DD
     AddedByUs,     // AU
