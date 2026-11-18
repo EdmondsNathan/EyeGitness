@@ -1,15 +1,9 @@
+#[derive(Debug, thiserror::Error)]
 pub(crate) enum GitError {
-    Io(std::io::Error),
+    #[error("failed to run git: {0}")]
+    Io(#[from] std::io::Error),
+    #[error("Git failed: {0}")]
     Git(String),
+    #[error("Parser failed: {0}")]
     Parse(String),
-}
-
-impl std::fmt::Display for GitError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            GitError::Io(error) => write!(f, "{}", error),
-            GitError::Git(error) => write!(f, "{}", error),
-            GitError::Parse(error) => write!(f, "{}", error),
-        }
-    }
 }
