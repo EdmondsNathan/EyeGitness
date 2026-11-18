@@ -7,7 +7,7 @@ impl Repo {
     pub(crate) fn status(&self) -> Result<Vec<GitFile>, GitError> {
         parse::status(&runner::run_git(
             &self.path,
-            &["status", "--porcelain", "-z"],
+            &["status", "--porcelain", "-z", "--untracked-files=all"],
         )?)
     }
 }
