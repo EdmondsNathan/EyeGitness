@@ -96,7 +96,6 @@ fn status_from_char(c: char) -> Result<Option<FileStatus>, GitError> {
     })
 }
 
-// TODO tests
 #[cfg(test)]
 mod tests {
     use super::*;
