@@ -12,7 +12,7 @@ pub(crate) struct Repo {
 
 impl Repo {
     pub(crate) fn open(path: &Path) -> Result<Repo, GitError> {
-        let output = runner::run_git(path, &["rev-parse", "--show-top-level"])?;
+        let output = runner::run_git(path, &["rev-parse", "--show-toplevel"])?;
         let root = PathBuf::from(output.trim_end_matches(['\n', '\r']));
         Ok(Repo { path: root })
     }
