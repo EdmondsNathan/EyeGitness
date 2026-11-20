@@ -1,6 +1,7 @@
 pub(super) use git_error::GitError;
 pub(crate) use git_file::{ConflictKind, FileState, FileStatus, GitFile};
-pub(super) use repo::{DiffMode, Repo};
+pub(super) use repo::DiffMode;
+pub(crate) use repo::Repo;
 
 mod git_error;
 mod git_file;
