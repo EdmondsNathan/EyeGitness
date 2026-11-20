@@ -1,6 +1,10 @@
-# EyeGitness
+# EyeGitness v1.0.0
 
 A keyboard-driven Git TUI for managing your git repos.
+
+## v2.0.0
+EyeGitness is currently being rewritten in Rust! While it is still currently in pre-alpha, you can check out the Rust branch [here](https://github.com/EdmondsNathan/EyeGitness/tree/rust).
+v2.0.0 Will aim to have feature-parity with the current Python version, but it is being designed to be more extensible and allow many more features.
 
 ## Overview
 
