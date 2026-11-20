@@ -5,10 +5,7 @@ use crate::app::{
 
 impl Repo {
     pub(crate) fn status(&self) -> Result<Vec<GitFile>, GitError> {
-        parse::status(&runner::run_git(
-            &self.path,
-            &["status", "--porcelain", "-z", "--untracked-files=all"],
-        )?)
+        parse::status(&runner::run_git(&self.path, parse::STATUS_ARGS)?)
     }
 }
 

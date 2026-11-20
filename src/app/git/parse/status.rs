@@ -2,6 +2,8 @@ use std::str::Split;
 
 use crate::app::git::{ConflictKind, FileState, FileStatus, GitError, GitFile};
 
+pub(crate) const STATUS_ARGS: &[&str] = &["status", "--porcelain", "-z", "--untracked-files=all"];
+
 pub(crate) fn status(output: &str) -> Result<Vec<GitFile>, GitError> {
     let mut files: Vec<GitFile> = Vec::new();
     let mut fields = output.split('\0');
